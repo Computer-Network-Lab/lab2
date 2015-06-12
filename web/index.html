@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!-- http:// index.html?face=xxx&search=xxx&codename=xxx-->
+<html>
+<head>
+  <title>FaceCode</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/progress.min.js"></script>
+  <link href="css/progressjs.min.css" rel="stylesheet">
+  <link href="css/normalize.css" rel="stylesheet">
+  
+  <script type="text/javascript">
+    (function ($) {
+        $.getUrlParam = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); 
+            return null;
+        }
+    })(jQuery);
+  </script>
+</head>
+
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <h1>传说中的Lab2</h1>
+  </div>
+  <script type="text/javascript">
+    var YOUR_API_SECRET = "JKQ3s2IcDA-wtV1LPId8J-s2t03YoMYk";
+    var YOUR_API_KEY = "d24b4f4288a33e51692e89d847de569b";
+    var FACESET = "123";
+    
+    var desc = {
+      "c++": "1111111", 
+      "java": "22222222", 
+      "css": "3333333",
+      "test1": "444444", 
+      "test2": "5555555", 
+      "test3": "66666666", 
+      "test4": "77777777"
+    }
+    
+    var detectUrl = "https://apius.faceplusplus.com/v2/detection/detect?";
+    var searchUrl = "https://apius.faceplusplus.com/v2/recognition/search?";
+    var getImageUrl = "https://apius.faceplusplus.com/v2/info/get_image?";
+    
+    //progressJs().setOptions({overlayMode: true, theme: 'blueOverlay'}).start().autoIncrease(10, 500);
+
+    // if(window.attachEvent) {
+    //   window.attachEvent('onload', function(){ progressJs().end(); });
+    // } else {
+    //      if(window.onload) {
+    //          var curronload = window.onload;
+    //          var newonload = function() {
+    //              curronload();
+    //              progressJs().end();
+    //          };
+    //          window.onload = newonload;
+    //      } else {
+    //          window.onload = function(){ progressJs().end(); };
+    //      }
+    // }
+
+  </script>
+  <img id="faceImg" src="img/test.jpg" height="300px" width="300px"/>
+  <img id="searchImg" src="img/test2.jpg" height="300px" width="300px"/>
+  <div class="row">
+    <p class="lead" id="codeTitle"> c++ </p>
+  </div>
+  <div id="codeDesc">
+    ......
+  </div>
+
+  <script type="text/javascript">
+    var faceid = $.getUrlParam("face");
+    var searchid = $.getUrlParam("search");
+    var code = $.getUrlParam("codename");
+
+    if (faceid != null) {
+      var faceparam = {
+        img_id: imageid,
+        api_key: YOUR_API_KEY,
+        api_secret: YOUR_API_SECRET
+      }
+      $.ajax({
+        url: getImageUrl + $.param(faceparam),
+        type: 'get',
+        success: function(data) {
+          $('#faceImg').src = data.url;
+        },
+        error: function() {
+          alert("...");
+        }
+      });
+    }
+
+    if (searchid != null) {
+      var searchparam = {
+        img_id: searchid,
+        api_key: YOUR_API_KEY,
+        api_secret: YOUR_API_SECRET
+      }
+      $.ajax({
+        url: getImageUrl + $.param(searchparam),
+        type: 'get',
+        success: function(data) {
+          $('#searchImg').src = data.url;
+        },
+        error: function() {
+          alert("......");
+        }
+      });
+    }
+
+    if (code != null) {
+      $('#codeTitle').html(code);
+      $('#codeDesc').html(desc[code]);
+    }
+    else {
+      $('#codeDesc').html(desc["c++"]);
+    }
+  </script>
+
+  <hr />
+  <p>上传我的头像</p>
+<form id="imageForm" enctype="multipart/form-data">
+  <input type="file" name="photo">
+  <button type="submit" onclick="myUpload()">Submit</button>
+  <script type="text/javascript">
+    function myUpload() {
+      progressJs().setOptions({overlayMode: true, theme: 'blueOverlay'}).start().autoIncrease(10, 500);
+
+      var detectParams = {api_secret: YOUR_API_SECRET, 
+                          api_key: YOUR_API_KEY}
+      var formdata = new FormData();
+
+      var detect = $.ajax({
+        url: detectUrl + $.param(detectParams),
+        type: 'post',
+        data: $('#imageForm').serialize(),
+        success: function(data) {
+          var key_face_id = data.face[0].face_id;
+          var searchParams = {api_secret: YOUR_API_SECRET,
+                              api_key: YOUR_API_KEY,
+                              key_face_id: key_face_id,
+                              faceset_name: FACESET };
+          
+          var search = $.ajax({
+            url : searchUrl + $.param(searchParams),
+            type: 'get',
+            success: function(data) {
+              var imageid = data.candidate[0].face_id;
+              var tagname = data.candidate[0].tag.name;
+              var tagcode = data.candidate[0].tag.code;
+              var imageUrlParams = {img_id: imageid,
+                                    api_key: YOUR_API_KEY,
+                                    api_secret: YOUR_API_SECRET}
+              progressJs().end();
+
+              var newParams = {
+                face: key_face_id,
+                search: imageid,
+                code: tagcode
+              }
+
+              window.location.href = "index.html?" + $.param(newParams);
+
+              // var imageurl = $.ajax({
+              //   url: getImageUrl + $.param(imageUrlParams),
+              //   type: 'get',
+              //   success: function(data) {
+              //     var resultUrl = data.url;
+              //     $('#faceImg').src = resultUrl;
+              //     $('#codeTitle').html(tagcode);
+              //     $('#codeDesc').html(desc[tagcode]);
+
+              //     progressJs().end();
+
+              //   },
+              //   error: function() {
+              //     alert("oooops!!!");
+              //   }
+              // });
+            },
+            error: function() {
+              alert("ooops!!!");
+            }
+          });
+        },
+        error : function() {
+          alert("ops!!!");
+        }
+      });
+
+      //https://apius.faceplusplus.com/v2/detection/detect?url=<uploadimage_url>&api_secret=YOUR_API_SECRET&api_key=YOUR_API_KEY
+
+      //https://apius.faceplusplus.com/v2/recognition/search?api_secret=YOUR_API_SECRET&api_key=YOUR_API_KEY&key_face_id=<faceid>&faceset_name=DemoFaceset
+
+      //https://apius.faceplusplus.com/v2/info/get_image?img_id=<matchfaceid>&api_key=YOUR_API_KEY&api_secret=YOUR_API_SECRET
+
+
+    }
+  </script>
+</form>
+</div>
+</body>
+</html>
