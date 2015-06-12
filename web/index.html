@@ -5,7 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
     <title>最适合我的语言是Ruby</title>
-    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="js/holder.min.js"></script>
     <script type="text/javascript" src="js/progress.min.js"></script>
     <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.5.4.js"></script>
     <link href="css/progressjs.min.css" rel="stylesheet">
@@ -29,9 +30,11 @@
         width: 120px;
         height: 120px;
     }
+
     .autoheight {
         height: 600px;
     }
+
     .nofile {
         position: absolute;
         top: 0;
@@ -65,9 +68,9 @@
         "666": "77777777"
     }
 
-    var detectUrl = "http://apicn.faceplusplus.com/v2/detection/detect?";
-    var searchUrl = "http://apicn.faceplusplus.com/v2/recognition/search?";
-    var getFaceUrl = "http://apicn.faceplusplus.com/v2/info/get_face?";
+    var detectUrl = "https://apicn.faceplusplus.com/v2/detection/detect?";
+    var searchUrl = "https://apicn.faceplusplus.com/v2/recognition/search?";
+    var getFaceUrl = "https://apicn.faceplusplus.com/v2/info/get_face?";
     </script>
     <nav class="white" role="navigation">
         <div class="nav-wrapper container">
@@ -81,10 +84,10 @@
                 <br>
                 <div class="center row">
                     <div class="col s6 m6">
-                        <img id="faceImg" src="user.jpg" class="circle user " />
+                        <img id="faceImg" src="holder.js/150x150" class="circle user " />
                     </div>
                     <div class="col s6 m6">
-                        <img id="searchImg" src="dashen.png" class="circle user" />
+                        <img id="searchImg" src="holder.js/150x150" class="circle user" />
                     </div>
                 </div>
                 <h1 class="header center teal-text text-lighten-2" id="conclusion">最适合我的语言是<span class="codename">Ruby</span></h1>
@@ -165,68 +168,76 @@
     </script>
     <script type="text/javascript">
     $(function() {
+        var UserImage = AV.Object.extend("UserImage");
         $("#imageForm").on('submit', function(e) {
             e.preventDefault();
             progressJs().setOptions({
                 overlayMode: true,
                 theme: 'blueOverlay'
             }).start().autoIncrease(10, 500);
+            var userImage = new UserImage();
+            var image = new AV.File($('#img')[0].files[0].name, $('#img')[0].files[0]);
+            userImage.set("image", image);
+            userImage.save();
+            image.save().then(function() {
+            	progressJs().set(200);
+            	var detectParams = {
+                	api_secret: YOUR_API_SECRET,
+                	api_key: YOUR_API_KEY,
+                	url: userImage.get("image").url(),
+            	};
+                var detect = $.ajax({
+                    url: detectUrl + $.param(detectParams),
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                    	progressJs().set(300);
+                        console.log(data);
+                        var key_face_id = data.face[0].face_id;
+                        console.log('FACESET' + FACESET);
+                        var searchParams = {
+                            api_secret: YOUR_API_SECRET,
+                            api_key: YOUR_API_KEY,
+                            key_face_id: key_face_id,
+                            faceset_name: FACESET
+                        };
 
-            var detectParams = {
-                api_secret: YOUR_API_SECRET,
-                api_key: YOUR_API_KEY,
-            };
+                        var search = $.ajax({
+                            url: searchUrl + $.param(searchParams),
+                            type: 'get',
+                            success: function(data) {
+                            	progressJs().set(400);
+                                console.log(data);
+                                var faceid = data.candidate[0].face_id;
+                                var tagarray = data.candidate[0].tag.split(":");
+                                var tagname = tagarray[1].split(",")[0];
+                                var tagcode = tagarray[2].split("}")[0];
+                                userImage.set("faceID", faceid);
+                                userImage.save();
+                                progressJs().end();
 
-            console.log(detectParams);
-            console.log($('#img')[0].files[0]);
-            var fd = new FormData();
-            fd.append('img', $('#img')[0].files[0]);
-            var detect = $.ajax({
-                url: detectUrl + $.param(detectParams),
-                type: 'POST',
-                data: fd,
-                contentType: false,
-                processData: false,
-                success: function(data) {
-                    console.log(data);
-                    var key_face_id = data.face[0].face_id;
-                    console.log('FACESET' + FACESET);
-                    var searchParams = {
-                        api_secret: YOUR_API_SECRET,
-                        api_key: YOUR_API_KEY,
-                        key_face_id: key_face_id,
-                        faceset_name: FACESET
-                    };
+                                var newParams = {
+                                    face: key_face_id,
+                                    search: faceid,
+                                    code: tagcode,
+                                    name: tagname
+                                }
 
-                    var search = $.ajax({
-                        url: searchUrl + $.param(searchParams),
-                        type: 'get',
-                        success: function(data) {
-                            console.log(data);
-                            var faceid = data.candidate[0].face_id;
-                            var tagarray = data.candidate[0].tag.split(":");
-                            var tagname = tagarray[1].split(",")[0];
-                            var tagcode = tagarray[2].split("}")[0];
-                            progressJs().end();
+                                window.location.href = "index.html?" + $.param(newParams);
 
-                            var newParams = {
-                                face: key_face_id,
-                                search: faceid,
-                                code: tagcode,
-                                name: tagname
+                            },
+                            error: function() {
+                                //alert("ooops!!!");
                             }
-
-                            window.location.href = "index.html?" + $.param(newParams);
-
-                        },
-                        error: function() {
-                            //alert("ooops!!!");
-                        }
-                    });
-                },
-                error: function() {
-                    //alert("ops!!!");
-                }
+                        });
+                    },
+                    error: function() {
+                        //alert("ops!!!");
+                    }
+                });
+            }, function(error) {
+                // Upload error
             });
         });
         $("#img").on('change', function(e) {
