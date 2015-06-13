@@ -72,9 +72,11 @@ $(function() {
     if (name != null) {
         $('#coder').html(name);
         $('#coder').attr("href", "https://github.com/" + name);
+        $('#coderImg').attr("href", "https://github.com/" + name);
     } else {
-        $('#coder').html('liudangyi');
-        $('#coder').attr("href", "https://github.com/liudangyi");
+        $('#coder').html('null');
+        $('#coder').attr("href", "https://github.com/null");
+        $('#coderImg').attr("href", "https://github.com/null");
     }
 });
 $(function() {
@@ -105,7 +107,8 @@ $(function() {
                     progressJs().set(300);
                     if (data.face.length <= 0) {
                         progressJs().end();
-                        Materialize.toast('No face recognized.', 4000)
+                        setTimeout(function(){Materialize.toast('No face recognized.', 2000);}, 500);
+                        return;
                     }
                     var key_face_id = data.face[0].face_id;
                     console.log('FACESET' + FACESET);
@@ -139,7 +142,8 @@ $(function() {
                                 window.location.href = "index.html?" + $.param(newParams);
                             } else {
                                 progressJs().end();
-                                Materialize.toast('No face matched', 4000);
+                                setTimeout(function(){Materialize.toast('No face matched', 4000);}, 500);
+                                return;
                             }
 
                         },
