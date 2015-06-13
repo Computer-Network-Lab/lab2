@@ -1,14 +1,25 @@
-(function($){
-  $(function(){
+(function($) {
+    $(function() {
 
-    $('.button-collapse').sideNav();
-    $('.parallax').parallax();
+        $('.button-collapse').sideNav();
+        $('.parallax').parallax();
 
-  }); // end of document ready
+    }); // end of document ready
 
 })(jQuery); // end of jQuery name space
 
 AV.initialize("z06ful0pwqno0smjaf31sfqgsnmecr7fc3cpqhb9vxiqilvm", "qxvgd6ye1gl99jpkinor71mhbc77m9plwzoi4hrwdiy4j9rd");
+var analytics = AV.analytics({
+    appId: 'z06ful0pwqno0smjaf31sfqgsnmecr7fc3cpqhb9vxiqilvm',
+    appKey: 'qxvgd6ye1gl99jpkinor71mhbc77m9plwzoi4hrwdiy4j9rd',
+    version: '1.0.0',
+    channel: 'web'
+});
+analytics.send({
+    event: 'page load',
+    attr: {},
+    duration: 0
+}, function(result) {});
 $.getUrlParam = function(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
     var r = window.location.search.substr(1).match(reg);
@@ -51,6 +62,11 @@ $(function() {
     }
 });
 $(function() {
+    analytics.send({
+        event: 'try take',
+        attr: {},
+        duration: 0
+    }, function(result) {});
     var UserImage = AV.Object.extend("UserImage");
     $("#imageForm").on('submit', function(e) {
         e.preventDefault();
@@ -78,10 +94,25 @@ $(function() {
                     progressJs().set(60);
                     if (data.face.length <= 0) {
                         progressJs().end();
-                        setTimeout(function(){Materialize.toast('No face recognized.', 2000);}, 500);
+                        analytics.send({
+                            event: 'face not detected',
+                            attr: {},
+                            duration: 0
+                        }, function(result) {});
+
+                        setTimeout(function() {
+                            Materialize.toast('No face recognized.', 2000);
+                        }, 500);
                         return;
                     }
                     var key_face_id = data.face[0].face_id;
+                    analytics.send({
+                        event: 'face detected',
+                        attr: {
+                            faceId: key_face_id
+                        },
+                        duration: 0
+                    }, function(result) {});
                     var searchParams = {
                         api_secret: YOUR_API_SECRET,
                         api_key: YOUR_API_KEY,
@@ -118,6 +149,11 @@ $(function() {
                                             code: tagcode,
                                             name: tagname
                                         }
+                                        analytics.send({
+                                            event: 'finish take',
+                                            attr: {},
+                                            duration: 0
+                                        }, function(result) {});
                                         window.location.href = "index.html?" + $.param(newParams);
                                     },
                                     error: function(xhr, textStatus, errorThrown) {
@@ -133,7 +169,9 @@ $(function() {
                                 });
                             } else {
                                 progressJs().end();
-                                setTimeout(function(){Materialize.toast('No face matched', 4000);}, 500);
+                                setTimeout(function() {
+                                    Materialize.toast('No face matched', 4000);
+                                }, 500);
                                 return;
                             }
 
