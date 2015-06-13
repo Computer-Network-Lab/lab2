@@ -7,19 +7,17 @@
   }); // end of document ready
 })(jQuery); // end of jQuery name space
 
+AV.initialize("z06ful0pwqno0smjaf31sfqgsnmecr7fc3cpqhb9vxiqilvm", "qxvgd6ye1gl99jpkinor71mhbc77m9plwzoi4hrwdiy4j9rd");
+$.getUrlParam = function(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]);
+    return null;
+}
 var faceid = $.getUrlParam("face");
 var searchid = $.getUrlParam("search");
 var code = $.getUrlParam("code");
 var name = $.getUrlParam("name");
-(function($) {
-    AV.initialize("z06ful0pwqno0smjaf31sfqgsnmecr7fc3cpqhb9vxiqilvm", "qxvgd6ye1gl99jpkinor71mhbc77m9plwzoi4hrwdiy4j9rd");
-    $.getUrlParam = function(name) {
-        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-        var r = window.location.search.substr(1).match(reg);
-        if (r != null) return unescape(r[2]);
-        return null;
-    }
-})(jQuery);
 $(function() {
     if (faceid != null) {
         console.log(faceid);
