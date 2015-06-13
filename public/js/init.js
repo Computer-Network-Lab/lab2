@@ -60,10 +60,12 @@ $(function() {
 
     if (code != null) {
         $('.codename').html(code);
+        document.title += code;
         $('#text1').html(text[code][0]);
         $('#text2').html(text[code][1]);
         $('#text3').html(text[code][2]);
     } else {
+        document.title += code;
         $('.codename').html("C++");
     }
 
