@@ -103,7 +103,10 @@ $(function() {
                 processData: false,
                 success: function(data) {
                     progressJs().set(300);
-                    console.log(data);
+                    if (data.face.length <= 0) {
+                        progressJs().end();
+                        Materialize.toast('No face recognized.', 4000)
+                    }
                     var key_face_id = data.face[0].face_id;
                     console.log('FACESET' + FACESET);
                     var searchParams = {
@@ -118,23 +121,26 @@ $(function() {
                         type: 'get',
                         success: function(data) {
                             progressJs().set(400);
-                            console.log(data);
-                            var faceid = data.candidate[0].face_id;
-                            var tagarray = data.candidate[0].tag.split(":");
-                            var tagname = tagarray[1].split(",")[0];
-                            var tagcode = tagarray[2].split("}")[0];
-                            userImage.set("faceID", faceid);
-                            userImage.save();
-                            progressJs().end();
+                            if (data.candidate.length > 0) {
+                                var faceid = data.candidate[0].face_id;
+                                var tagarray = data.candidate[0].tag.split("\"");
+                                var tagname = tagarray[1];
+                                var tagcode = tagarray[3];
+                                userImage.set("faceID", faceid);
+                                userImage.save();
+                                progressJs().end();
 
-                            var newParams = {
-                                face: key_face_id,
-                                search: faceid,
-                                code: tagcode,
-                                name: tagname
+                                var newParams = {
+                                    face: key_face_id,
+                                    search: faceid,
+                                    code: tagcode,
+                                    name: tagname
+                                }
+                                window.location.href = "index.html?" + $.param(newParams);
+                            } else {
+                                progressJs().end();
+                                Materialize.toast('No face matched', 4000);
                             }
-
-                            window.location.href = "index.html?" + $.param(newParams);
 
                         },
                         error: function() {
