@@ -106,17 +106,17 @@ $(function() {
         progressJs().setOptions({
             overlayMode: true,
             theme: 'blueOverlay'
-        }).start().autoIncrease(10, 500);
+        }).start().autoIncrease(5, 500);
         var userImage = new UserImage();
         var image = new AV.File($('#img')[0].files[0].name, $('#img')[0].files[0]);
         userImage.set("image", image);
         userImage.save();
         image.save().then(function() {
-            progressJs().set(200);
+            progressJs().set(40);
             var detectParams = {
                 api_secret: YOUR_API_SECRET,
                 api_key: YOUR_API_KEY,
-                url: userImage.get("image").url(),
+                url: userImage.get("image").thumbnailURL(500, 500),
             };
             var detect = $.ajax({
                 url: detectUrl + $.param(detectParams),
@@ -124,7 +124,7 @@ $(function() {
                 contentType: false,
                 processData: false,
                 success: function(data) {
-                    progressJs().set(300);
+                    progressJs().set(60);
                     if (data.face.length <= 0) {
                         progressJs().end();
                         setTimeout(function(){Materialize.toast('No face recognized.', 2000);}, 500);
@@ -143,7 +143,7 @@ $(function() {
                         url: searchUrl + $.param(searchParams),
                         type: 'get',
                         success: function(data) {
-                            progressJs().set(400);
+                            progressJs().set(80);
                             if (data.candidate.length > 0) {
                                 var faceid = data.candidate[0].face_id;
                                 var tagarray = data.candidate[0].tag.split("\"");
